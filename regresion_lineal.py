@@ -6,12 +6,12 @@ import numpy as np
 from limpiar_datos import limpiar_datos
 
 # Cargar CSV y limpiar nombres de columnas
-df = pd.read_csv("8. baseregiones.csv", encoding='latin-1', sep=',')
+df = pd.read_csv("8. baseregiones.csv", encoding='UTF-8', sep=',')
 limpiar_datos(df)
 df.columns = df.columns.str.replace('"', '')  # Remover comillas de los nombres de columnas
 
 df_filtrado = df[
-    (df['REGION'] == 'VALPARAÍSO')
+    (df['REGION'] == 'METROPOLITANA DE SANTIAGO')
 ].copy()
 
 # Convertir variables categóricas a numéricas
