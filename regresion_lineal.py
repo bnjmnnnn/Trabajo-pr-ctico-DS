@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 from limpiar_datos import limpiar_datos
+import matplotlib.pyplot as plt
 
 # Cargar CSV y limpiar nombres de columnas
 df = pd.read_csv("8. baseregiones.csv", encoding='UTF-8', sep=',')
@@ -57,3 +58,14 @@ print(f'   → En promedio, las predicciones se desvían en {rmse:.2f} personas 
 
 print(f'\n📈 R²: {r2:.2f} ({r2:.0%})')
 print(f'   → El modelo explica el {r2:.0%} de la variabilidad en la migración total')
+
+# Gráfico simple de regresión lineal
+plt.figure(figsize=(10, 6))
+plt.scatter(Y_test, Y_pred, alpha=0.7, color='blue', s=60)
+plt.plot([Y_test.min(), Y_test.max()], [Y_test.min(), Y_test.max()], 'r--', linewidth=2, label='Línea perfecta')
+plt.title(f'Regresión Lineal - Predicciones vs Valores Reales\nR² = {r2:.3f}', fontsize=14, fontweight='bold')
+plt.xlabel('Valores Reales')
+plt.ylabel('Predicciones del Modelo')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
