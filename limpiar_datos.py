@@ -37,4 +37,5 @@ def limpiar_datos(df):
             df[columnas_existentes] = df[columnas_existentes].abs()
             print(f"\nValores negativos convertidos a positivos (valor absoluto) en: {', '.join(columnas_existentes)}")
         
-        return df
+               # Transformar H y M a 1 y 0 respectivamente en la columna "SEXO"
+        df['SEXO'] = df['SEXO'].map({'H': 1, 'M': 0}) 
