@@ -64,6 +64,32 @@ try:
     print("\nReporte de Clasificación (0=No Irregular, 1=Sí Irregular):")
     print(classification_report(y_test, y_pred)) # Muestra la precision por filas, los Recall y el F1-score.
 
+    # --- 6. Ejemplo de Predicción ---
+    # (Esta es la sección nueva que solicitaste)
+    print("\n--- EJEMPLO DE PREDICCIÓN CON UN DATO REAL ---")
+    
+    # Tomar el primer dato del conjunto de prueba para mostrarlo
+    # Usamos .iloc[0] para asegurarnos de tomar la *primera fila* del set de prueba
+    ejemplo_features = X_test.iloc[0]
+    ejemplo_prediccion = y_pred[0] # La predicción para la primera fila
+    ejemplo_real = y_test.iloc[0] # El valor real para la primera fila
+
+    print(f"\nDatos de entrada (Features) para el primer caso de prueba:")
+    print(ejemplo_features)
+    
+    # Formatear la predicción y el valor real para que sean más legibles
+    prediccion_texto = "SÍ es Irregular" if ejemplo_prediccion == 1 else "NO es Irregular"
+    real_texto = "SÍ es Irregular" if ejemplo_real == 1 else "NO es Irregular"
+
+    print(f"\n-> Predicción del Modelo: {ejemplo_prediccion} ({prediccion_texto})")
+    print(f"-> Valor Real:           {ejemplo_real} ({real_texto})")
+
+    if ejemplo_prediccion == ejemplo_real:
+        print("\n¡El modelo acertó en este caso!")
+    else:
+        print("\nEl modelo falló en este caso.")
+
+
 except FileNotFoundError:
     print("No se encontro el archivo CSV")
 except pd.errors.EmptyDataError:
