@@ -1,8 +1,13 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from limpiar_datos import limpiar_datos
+
+# --- Imports para gráficos ---
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os 
 
 try:
     # Intentar varias codificaciones comunes si el archivo contiene caracteres especiales
@@ -20,7 +25,11 @@ try:
         df_csv = pd.read_csv("8. baseregiones.csv")
     df_datos = df_csv.copy() # Crear una copia del DataFrame original para trabajar en ella
     limpiar_datos(df_datos)
-    print(df_datos)
+    # Nota: La impresión de todo el df_datos puede ser muy grande,
+    # considera usar df_datos.head() o df_datos.info()
+    print("Datos después de la limpieza (primeras 5 filas):")
+    print(df_datos.head())
+
 
     # --- Creando el objetivo (Y) ---
     # Se usa .astype(int) para convertir los true y false en 1 y 0
@@ -30,8 +39,7 @@ try:
     # --- 2. Definición de X e Y ---
     print("\n--- PREPARANDO EL MODELO DE IRREGULARIDAD ---")
 
-    # Asegurar que existan columnas numéricas requeridas. Si no existen,
-    # crearlas a partir de las columnas categóricas presentes.
+    # Asegurar que existan columnas numéricas requeridas.
     if 'PAIS_CODIGO' not in df_datos.columns and 'PAIS' in df_datos.columns:
         df_datos['PAIS_CODIGO'] = pd.factorize(df_datos['PAIS'])[0]
         print("Columna 'PAIS_CODIGO' creada a partir de 'PAIS' mediante factorize.")
@@ -41,7 +49,9 @@ try:
         print("Columna 'EDAD_NUMERICA' creada a partir de 'EDAD' mediante factorize.")
 
     #Se separa la X y la y
-    X = df_datos[['PAIS_CODIGO', 'EDAD_NUMERICA', 'SEXO', 'AÑO ESTIMACION', 'CODREGEO']]
+    # Definimos las columnas de características
+    features = ['PAIS_CODIGO', 'EDAD_NUMERICA', 'SEXO', 'AÑO ESTIMACION', 'CODREGEO']
+    X = df_datos[features]
     y = df_datos['ES_IRREGULAR']
     
 
@@ -64,12 +74,59 @@ try:
     print("\nReporte de Clasificación (0=No Irregular, 1=Sí Irregular):")
     print(classification_report(y_test, y_pred)) # Muestra la precision por filas, los Recall y el F1-score.
 
-    # --- 6. Ejemplo de Predicción ---
-    # (Esta es la sección nueva que solicitaste)
+    # --- 6. Generación de Gráficos ---
+    # (Esta es la sección nueva para los gráficos)
+    print("\n--- GENERANDO GRÁFICOS DE RENDIMIENTO ---")
+
+    # 1. Matriz de Confusión
+    try:
+        cm = confusion_matrix(y_test, y_pred)
+        # plt.figure() limpia cualquier gráfico anterior
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                    xticklabels=['Pred. No Irregular (0)', 'Pred. Sí Irregular (1)'], 
+                    yticklabels=['Real No Irregular (0)', 'Real Sí Irregular (1)'])
+        plt.title('Matriz de Confusión')
+        plt.ylabel('Valor Real')
+        plt.xlabel('Predicción del Modelo')
+        
+        # Guardar el gráfico en un archivo
+        ruta_matriz = "matriz_confusion.png"
+        plt.savefig(ruta_matriz)
+        plt.close() # Cierra la figura para liberar memoria
+        print(f"Gráfico 'Matriz de Confusión' guardado en: {ruta_matriz}")
+
+    except Exception as e:
+        print(f"Error al generar la Matriz de Confusión: {e}")
+
+    # 2. Importancia de Características
+    try:
+        importances = model.feature_importances_
+        # Crear un DataFrame para facilitar el gráfico
+        feature_imp_df = pd.DataFrame({'Feature': features, 'Importance': importances})
+        feature_imp_df = feature_imp_df.sort_values(by='Importance', ascending=False)
+        
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x='Importance', y='Feature', data=feature_imp_df, palette='viridis')
+        plt.title('Importancia de las Características (Features)')
+        plt.xlabel('Nivel de Importancia')
+        plt.ylabel('Característica')
+        plt.tight_layout() # Ajusta el gráfico para que no se corten las etiquetas
+        
+        # Guardar el gráfico en un archivo
+        ruta_features = "importancia_features.png"
+        plt.savefig(ruta_features)
+        plt.close()
+        print(f"Gráfico 'Importancia de Características' guardado en: {ruta_features}")
+
+    except Exception as e:
+        print(f"Error al generar el gráfico de Importancia de Características: {e}")
+
+
+    # --- 7. Ejemplo de Predicción ---
     print("\n--- EJEMPLO DE PREDICCIÓN CON UN DATO REAL ---")
     
     # Tomar el primer dato del conjunto de prueba para mostrarlo
-    # Usamos .iloc[0] para asegurarnos de tomar la *primera fila* del set de prueba
     ejemplo_features = X_test.iloc[0]
     ejemplo_prediccion = y_pred[0] # La predicción para la primera fila
     ejemplo_real = y_test.iloc[0] # El valor real para la primera fila
@@ -91,6 +148,10 @@ try:
 
 
 except FileNotFoundError:
-    print("No se encontro el archivo CSV")
+    print("Error: No se encontró el archivo '8. baseregiones.csv'.")
 except pd.errors.EmptyDataError:
-    print("El archivo se encuentra vacio")
+    print("Error: El archivo '8. baseregiones.csv' se encuentra vacío.")
+except ImportError:
+    print("Error: Falta la biblioteca 'limpiar_datos'. Asegúrate de que el archivo 'limpiar_datos.py' esté en la misma carpeta.")
+except Exception as e:
+    print(f"Ha ocurrido un error inesperado: {e}")
