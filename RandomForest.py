@@ -3,8 +3,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from limpiar_datos import limpiar_datos
-
-# --- Imports para gráficos ---
+# Ordenado con IA para fines explicativos.
+# Imports para lo gráfico
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os 
@@ -18,28 +18,26 @@ try:
             print(f"Archivo leído con encoding: {_enc}")
             break
         except UnicodeDecodeError:
-            # probar siguiente encoding
             continue
     if df_csv is None:
-        # Si ninguno funcionó, levantar el error original para que sea visible
+        # Si ninguno se digno a funcionar, levanta el error original y ahora sera visible
         df_csv = pd.read_csv("8. baseregiones.csv")
-    df_datos = df_csv.copy() # Crear una copia del DataFrame original para trabajar en ella
+    df_datos = df_csv.copy() # Crea una copia del DataFrame original para trabajar en ella
     limpiar_datos(df_datos)
-    # Nota: La impresión de todo el df_datos puede ser muy grande,
-    # considera usar df_datos.head() o df_datos.info()
     print("Datos después de la limpieza (primeras 5 filas):")
     print(df_datos.head())
 
 
-    # --- Creando el objetivo (Y) ---
+    # Creando el objetivo (Y)
     # Se usa .astype(int) para convertir los true y false en 1 y 0
     df_datos['ES_IRREGULAR'] = (df_datos['RRAA_IRREGULAR'] > 0).astype(int)
     print("\nNueva columna 'ES_IRREGULAR' creada (0=No, 1=Sí).")
 
-    # --- 2. Definición de X e Y ---
+    # Definición de X e Y
     print("\n--- PREPARANDO EL MODELO DE IRREGULARIDAD ---")
 
     # Asegurar que existan columnas numéricas requeridas.
+    #.factorize() Les asigna un numero a cada dato que sea texto, para que pueda ser usado.
     if 'PAIS_CODIGO' not in df_datos.columns and 'PAIS' in df_datos.columns:
         df_datos['PAIS_CODIGO'] = pd.factorize(df_datos['PAIS'])[0]
         print("Columna 'PAIS_CODIGO' creada a partir de 'PAIS' mediante factorize.")
@@ -49,13 +47,13 @@ try:
         print("Columna 'EDAD_NUMERICA' creada a partir de 'EDAD' mediante factorize.")
 
     #Se separa la X y la y
-    # Definimos las columnas de características
+    # Definimos las columnas de características en las que nos centraremos.
     features = ['PAIS_CODIGO', 'EDAD_NUMERICA', 'SEXO', 'AÑO ESTIMACION', 'CODREGEO']
     X = df_datos[features]
     y = df_datos['ES_IRREGULAR']
     
 
-    # --- 4. Entrenamiento ---
+    # Entrenamiento, aqui esta intentando aprender
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     #Aqui asignamos el modelo de prediccion y le decimos cuanto tiene que pensar el consejo de arboles.
@@ -63,7 +61,7 @@ try:
     model.fit(X_train, y_train)
 
 
-    # --- 5. Evaluación ---
+    # Evaluación
     # Se toma el entrenamiento y comienza la prediccion  
 
     y_pred = model.predict(X_test)
@@ -74,8 +72,8 @@ try:
     print("\nReporte de Clasificación (0=No Irregular, 1=Sí Irregular):")
     print(classification_report(y_test, y_pred)) # Muestra la precision por filas, los Recall y el F1-score.
 
-    # --- 6. Generación de Gráficos ---
-    # (Esta es la sección nueva para los gráficos)
+    # Generación de Gráficos
+    # Esta es la sección para los gráficos
     print("\n--- GENERANDO GRÁFICOS DE RENDIMIENTO ---")
 
     # 1. Matriz de Confusión
@@ -83,12 +81,13 @@ try:
         cm = confusion_matrix(y_test, y_pred)
         # plt.figure() limpia cualquier gráfico anterior
         plt.figure(figsize=(8, 6))
+        #Aqui van las especificaciones de que datos debe tomar para el grafico.
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                     xticklabels=['Pred. No Irregular (0)', 'Pred. Sí Irregular (1)'], 
                     yticklabels=['Real No Irregular (0)', 'Real Sí Irregular (1)'])
-        plt.title('Matriz de Confusión')
-        plt.ylabel('Valor Real')
-        plt.xlabel('Predicción del Modelo')
+        plt.title('Matriz de Confusión') #El titulo we
+        plt.ylabel('Valor Real')# El lado y
+        plt.xlabel('Predicción del Modelo')# El lado x
         
         # Guardar el gráfico en un archivo
         ruta_matriz = "matriz_confusion.png"
@@ -123,7 +122,7 @@ try:
         print(f"Error al generar el gráfico de Importancia de Características: {e}")
 
 
-    # --- 7. Ejemplo de Predicción ---
+    # Ejemplo de Predicción
     print("\n--- EJEMPLO DE PREDICCIÓN CON UN DATO REAL ---")
     
     # Tomar el primer dato del conjunto de prueba para mostrarlo
@@ -155,3 +154,4 @@ except ImportError:
     print("Error: Falta la biblioteca 'limpiar_datos'. Asegúrate de que el archivo 'limpiar_datos.py' esté en la misma carpeta.")
 except Exception as e:
     print(f"Ha ocurrido un error inesperado: {e}")
+
